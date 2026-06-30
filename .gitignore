@@ -11,8 +11,11 @@ build/
 .venv/
 .python-version
 
-# uv
-uv.lock
+# SQLite databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
 
 # pytest
 .pytest_cache/
@@ -35,10 +38,6 @@ node_modules/
 dist/
 .cache/
 
-# npm / pnpm / yarn
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
 
 # OS
 .DS_Store
