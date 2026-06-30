@@ -11,11 +11,11 @@ FROM base AS dev
 RUN uv sync --frozen --all-groups
 COPY . .
 ENTRYPOINT ["sh", "entrypoint.sh"]
-CMD ["uv", "run", "fastapi", "dev", "app/main.py", "--host", "0.0.0.0"]
+CMD ["uv", "run", "fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "8014"]
 
 # ---- production ----
 FROM base AS production
 RUN uv sync --frozen --no-dev
 COPY . .
 ENTRYPOINT ["sh", "entrypoint.sh"]
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8014", "--workers", "2"]

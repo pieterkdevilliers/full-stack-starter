@@ -1,2 +1,4 @@
-# Import all models here so Alembic can autodiscover them.
-# Example: from app.models.task import Task
+from app.models.account import Account
+from app.models.user import AccountRole, User
+
+__all__ = ["Account", "User", "AccountRole"]

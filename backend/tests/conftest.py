@@ -1,4 +1,8 @@
-import pytest
+import os
+import uuid
+
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-at-least-32-bytes-long")
+
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -36,3 +40,23 @@ async def client(db_session: AsyncSession):
     ) as ac:
         yield ac
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def signed_up_user(client: AsyncClient) -> dict:
+    unique = uuid.uuid4().hex[:8]
+    response = await client.post(
+        "/auth/signup",
+        json={
+            "account_name": f"Account {unique}",
+            "email": f"owner-{unique}@example.com",
+            "password": "correct-horse-battery-staple",
+        },
+    )
+    assert response.status_code == 200
+    return response.json()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def auth_headers(signed_up_user: dict) -> dict[str, str]:
+    return {"Authorization": f"Bearer {signed_up_user['access_token']}"}

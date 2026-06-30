@@ -91,8 +91,8 @@ uv sync
 # Apply DB migrations
 uv run alembic upgrade head
 
-# Start the dev server (hot reload on :8000)
-uv run fastapi dev app/main.py
+# Start the dev server (hot reload on :8014)
+uv run fastapi dev app/main.py --port 8014
 ```
 
 **Frontend**
@@ -103,7 +103,7 @@ cd frontend
 # Install dependencies
 npm install
 
-# Start the dev server (hot reload on :3000)
+# Start the dev server (hot reload on :3014)
 npm run dev
 ```
 
@@ -114,9 +114,9 @@ npm run dev
 docker compose up --build
 ```
 
-- Backend: http://localhost:8000
-- Frontend: http://localhost:3000
-- API docs: http://localhost:8000/docs
+- Backend: http://localhost:8014
+- Frontend: http://localhost:3014
+- API docs: http://localhost:8014/docs
 
 Source code is volume-mounted into both containers, so edits are reflected immediately without rebuilding.
 
@@ -137,16 +137,21 @@ The frontend runs the pre-built Nuxt output (`node .output/server/index.mjs`). T
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DATABASE_URL` | `sqlite+aiosqlite:///./daily_tasks.db` | SQLAlchemy async database URL |
+| `JWT_SECRET_KEY` | none (required) | Secret used to sign/verify JWT access tokens. No insecure default — must be set explicitly. |
+| `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
+| `JWT_EXPIRE_MINUTES` | `60` | Access token lifetime in minutes |
+| `CORS_ORIGINS` | `http://localhost:3014` | Comma-separated list of origins allowed to call the API from a browser |
 
 ### Frontend
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `NUXT_PUBLIC_API_BASE` | `http://localhost:8000` | Base URL for API calls (public, available in browser) |
+| `NUXT_PUBLIC_API_BASE` | `http://localhost:8014` | Browser-facing API base URL. Sent to the client, so it must be reachable from the user's machine — use the host-mapped port, not a Docker service name. |
+| `NUXT_API_BASE_INTERNAL` | falls back to `NUXT_PUBLIC_API_BASE` | Server-only API base URL used for SSR fetches. In Docker, set this to the backend's service name (e.g. `http://backend:8014`) so server-side requests stay on the internal network. Never sent to the browser. |
 
 Set these in a `.env` file at the project root (not committed) or directly in `docker-compose.yml`.
 
-> **SSR + Docker note:** `NUXT_PUBLIC_API_BASE=http://backend:8000` resolves correctly for server-side (SSR) API calls via the Docker internal network. Always access the API via `useRuntimeConfig().public.apiBase` in your Vue components — Nuxt will use the env-configured value automatically.
+> **SSR + Docker:** `docker-compose.yml` sets `NUXT_PUBLIC_API_BASE=http://localhost:8014` (what the browser uses) and `NUXT_API_BASE_INTERNAL=http://backend:8014` (what server-side rendering uses inside the container). Use the `useApiBase()` composable in components/stores instead of reading `runtimeConfig` directly — it picks the right one automatically based on whether the code is running on the server or in the browser.
 
 ---
 

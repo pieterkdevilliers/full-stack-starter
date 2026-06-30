@@ -1,18 +1,23 @@
 import asyncio
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from alembic import context
-
-from app.db.base import Base
 import app.models  # noqa: F401 — ensures all models are imported for autogenerate
+from alembic import context
+from app.db.base import Base
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Match db/session.py: migrations must target the same database the app
+# runs against, not the static path in alembic.ini.
+database_url = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./daily_tasks.db")
+config.set_main_option("sqlalchemy.url", database_url)
 
 target_metadata = Base.metadata
 
