@@ -13,8 +13,14 @@ from app.schemas.auth import (
     SignupRequest,
     SignupResponse,
 )
-from app.services import account_service, auth_service
-from app.services.exceptions import AmbiguousAccountError, InvalidCredentialsError
+from app.schemas.common import MessageResponse
+from app.schemas.password_reset import PasswordResetConfirm, PasswordResetRequest
+from app.services import account_service, auth_service, password_reset_service
+from app.services.exceptions import (
+    AmbiguousAccountError,
+    InvalidCredentialsError,
+    InvalidResetTokenError,
+)
 
 router = APIRouter()
 
@@ -61,3 +67,29 @@ async def me(
 ):
     await db.refresh(current_user, attribute_names=["account"])
     return MeResponse(user=current_user, account=current_user.account)
+
+
+@router.post("/password-reset/request", response_model=MessageResponse)
+async def request_password_reset(
+    data: PasswordResetRequest, db: AsyncSession = Depends(get_db)
+):
+    await password_reset_service.request_password_reset(db, data.email)
+    return MessageResponse(
+        message="If that email exists, we've sent password reset instructions."
+    )
+
+
+@router.post("/password-reset/confirm", response_model=MessageResponse)
+async def confirm_password_reset(
+    data: PasswordResetConfirm, db: AsyncSession = Depends(get_db)
+):
+    try:
+        await password_reset_service.confirm_password_reset(
+            db, data.token, data.new_password
+        )
+    except InvalidResetTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token",
+        )
+    return MessageResponse(message="Your password has been reset. Please log in.")

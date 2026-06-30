@@ -17,6 +17,10 @@ class InvalidCredentialsError(Exception):
     pass
 
 
+class InvalidResetTokenError(Exception):
+    pass
+
+
 class AmbiguousAccountError(Exception):
     def __init__(self, candidates: list[User]):
         self.candidates = candidates

@@ -141,6 +141,13 @@ The frontend runs the pre-built Nuxt output (`node .output/server/index.mjs`). T
 | `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
 | `JWT_EXPIRE_MINUTES` | `60` | Access token lifetime in minutes |
 | `CORS_ORIGINS` | `http://localhost:3014` | Comma-separated list of origins allowed to call the API from a browser |
+| `FRONTEND_URL` | `http://localhost:3014` | Used to build links (e.g. password reset) embedded in outgoing emails |
+| `PASSWORD_RESET_TOKEN_EXPIRE_MINUTES` | `60` | How long a password reset link stays valid |
+| `SES_FROM_EMAIL` | none (optional) | Verified SES sender address. If unset, password reset emails are logged to the console instead of sent — the app works fully without it. |
+| `AWS_REGION` | none (optional) | AWS region for the SES client. Only used if `SES_FROM_EMAIL` is set. |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | none (optional) | Standard AWS credentials, read automatically by boto3 — not app-specific config, just need to be present in the environment. |
+
+> **AWS SES:** this is a starter template, so SES isn't wired up with real credentials out of the box. To enable real password reset emails, copy `.env.example` to `.env` at the project root, fill in `SES_FROM_EMAIL`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY` (a verified SES sender identity required), and restart. No code changes needed — `docker-compose.yml` already passes these through to the backend container. Until then, requesting a password reset logs the full email (including the working reset link) to the backend's stdout, so the flow is fully testable without an AWS account.
 
 ### Frontend
 

@@ -79,6 +79,12 @@ function chooseAccount(accountId: number) {
           />
         </UFormField>
 
+        <div class="text-right">
+          <ULink to="/forgot-password" class="text-sm text-(--ui-primary)">
+            Forgot password?
+          </ULink>
+        </div>
+
         <UButton type="submit" block :loading="isSubmitting">Log in</UButton>
       </UForm>
     </UCard>
